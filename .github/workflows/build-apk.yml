@@ -1,7 +1,5 @@
 name: Build Android APK
 
-# Roda automaticamente a cada push na branch main, e também pode ser
-# disparado manualmente pela aba "Actions" do GitHub (botão "Run workflow").
 on:
   push:
     branches: [ main ]
@@ -22,19 +20,33 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Esta action instala o Buildozer, o Android SDK/NDK e faz cache
-      # entre execuções (builds seguintes ficam bem mais rápidos).
-      - name: Compilar APK com Buildozer
-        id: buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk autoconf libtool pkg-config \
+            zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev \
+            automake build-essential ccache
+
+      - name: Instalar Buildozer e Cython
+        run: pip install --upgrade buildozer cython
+
+      - name: Cache do Buildozer (acelera builds seguintes)
+        uses: actions/cache@v4
         with:
-          workdir: UltraVideoDownloader_Mobile
-          command: buildozer android debug
-          buildozer_version: stable
+          path: |
+            ~/.buildozer
+            UltraVideoDownloader_Mobile/.buildozer
+          key: buildozer-${{ hashFiles('UltraVideoDownloader_Mobile/buildozer.spec') }}
+          restore-keys: buildozer-
+
+      - name: Compilar APK com Buildozer
+        working-directory: UltraVideoDownloader_Mobile
+        run: yes | buildozer android debug
 
       - name: Disponibilizar o APK como artefato do build
         uses: actions/upload-artifact@v4
         with:
           name: UltraVideoDownloader-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: UltraVideoDownloader_Mobile/bin/*.apk
           if-no-files-found: error
