@@ -1,0 +1,368 @@
+#:kivy 2.3.1
+
+<RoundedButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    bold: True
+    canvas.before:
+        Color:
+            rgba: self.background_color if self.background_color[3] else app.accent_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [14]
+
+<GhostButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: 0, 0, 0, 0
+    color: app.accent_color
+    bold: True
+    canvas.before:
+        Color:
+            rgba: app.card_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [12]
+
+<CardBox@BoxLayout>:
+    padding: 14
+    spacing: 8
+    canvas.before:
+        Color:
+            rgba: app.card_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [16]
+
+<SectionLabel@Label>:
+    color: app.accent_color
+    bold: True
+    font_size: '15sp'
+    size_hint_y: None
+    height: '26dp'
+    halign: 'left'
+    text_size: self.size
+
+<QueueRow>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: '34dp'
+    canvas.before:
+        Color:
+            rgba: app.accent_color if self.is_active else (0, 0, 0, 0)
+        Line:
+            width: 1.1
+            rectangle: self.x, self.y, self.width, self.height
+    Label:
+        text: root.label_text
+        color: app.accent_color if root.is_active else app.text_color
+        font_size: '13sp'
+        halign: 'left'
+        valign: 'middle'
+        text_size: self.size
+        padding: (8, 0)
+
+<HistoryRow>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: '54dp'
+    padding: (8, 4)
+    Label:
+        text: root.label_text
+        color: app.text_color
+        font_size: '12sp'
+        halign: 'left'
+        valign: 'top'
+        text_size: self.size
+
+<MainScreen>:
+    name: 'main'
+    canvas.before:
+        Color:
+            rgba: app.bg_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [16, 16, 16, 8]
+        spacing: 12
+
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            Label:
+                text: '[b]UltraVideoDownloader[/b]'
+                markup: True
+                color: app.text_color
+                font_size: '19sp'
+                halign: 'left'
+                text_size: self.size
+            GhostButton:
+                text: '\u2699'
+                size_hint_x: None
+                width: '44dp'
+                on_release: app.go_to('settings')
+
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: 14
+                size_hint_y: None
+                height: self.minimum_height
+
+                CardBox:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    SectionLabel:
+                        text: 'URL do conteudo'
+                    TextInput:
+                        id: url_input
+                        text: 'https://www.youtube.com/watch?v=...'
+                        multiline: False
+                        size_hint_y: None
+                        height: '44dp'
+                        background_color: app.bg_color
+                        foreground_color: app.text_color
+                        cursor_color: app.accent_color
+                        padding: (10, 10)
+                    RoundedButton:
+                        text: 'Obter Informacoes'
+                        size_hint_y: None
+                        height: '42dp'
+                        background_color: app.accent2_color
+                        on_release: app.fetch_video_info(url_input.text)
+
+                CardBox:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    SectionLabel:
+                        text: 'Video selecionado'
+                    AsyncImage:
+                        source: app.thumbnail_url if app.thumbnail_url else ''
+                        size_hint_y: None
+                        height: '140dp' if app.thumbnail_url else '0dp'
+                    Label:
+                        text: app.video_title
+                        color: app.text_color
+                        bold: True
+                        font_size: '14sp'
+                        size_hint_y: None
+                        height: self.texture_size[1] + 6
+                        text_size: self.width, None
+                        halign: 'left'
+                    Label:
+                        text: app.video_details
+                        color: app.text_secondary_color
+                        font_size: '12sp'
+                        size_hint_y: None
+                        height: self.texture_size[1] + 6
+                        text_size: self.width, None
+                        halign: 'left'
+
+                CardBox:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    SectionLabel:
+                        text: 'Qualidade'
+                    GridLayout:
+                        cols: 3
+                        spacing: 6
+                        size_hint_y: None
+                        height: '84dp'
+                        RoundedButton:
+                            text: 'Melhor'
+                            background_color: app.accent_color if app.selected_quality == 'best' else app.card_color
+                            on_release: app.set_quality('best')
+                        RoundedButton:
+                            text: '4K'
+                            background_color: app.accent_color if app.selected_quality == '2160p' else app.card_color
+                            on_release: app.set_quality('2160p')
+                        RoundedButton:
+                            text: '1080p'
+                            background_color: app.accent_color if app.selected_quality == '1080p' else app.card_color
+                            on_release: app.set_quality('1080p')
+                        RoundedButton:
+                            text: '720p'
+                            background_color: app.accent_color if app.selected_quality == '720p' else app.card_color
+                            on_release: app.set_quality('720p')
+                        RoundedButton:
+                            text: '480p'
+                            background_color: app.accent_color if app.selected_quality == '480p' else app.card_color
+                            on_release: app.set_quality('480p')
+                        RoundedButton:
+                            text: 'Audio (MP3)'
+                            background_color: app.accent_color if app.selected_quality == 'audio' else app.card_color
+                            on_release: app.set_quality('audio')
+
+                RoundedButton:
+                    text: 'INICIAR DOWNLOAD'
+                    size_hint_y: None
+                    height: '52dp'
+                    background_color: app.accent_color
+                    on_release: app.start_download(url_input.text)
+
+                CardBox:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    SectionLabel:
+                        text: 'Progresso atual'
+                    ProgressBar:
+                        max: 100
+                        value: app.progress_value
+                        size_hint_y: None
+                        height: '10dp'
+                    Label:
+                        text: app.progress_text
+                        color: app.text_secondary_color
+                        font_size: '11sp'
+                        size_hint_y: None
+                        height: '22dp'
+                    GhostButton:
+                        text: 'Cancelar download atual'
+                        size_hint_y: None
+                        height: '36dp'
+                        on_release: app.cancel_current()
+
+                CardBox:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: max(self.minimum_height, dp(140))
+                    SectionLabel:
+                        text: 'Fila de downloads'
+                    ScrollView:
+                        do_scroll_x: False
+                        BoxLayout:
+                            id: queue_list
+                            orientation: 'vertical'
+                            spacing: 4
+                            size_hint_y: None
+                            height: self.minimum_height
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: '44dp'
+                    spacing: 8
+                    GhostButton:
+                        text: 'Compartilhar ultimo'
+                        on_release: app.share_last_download()
+                    GhostButton:
+                        text: 'Historico'
+                        on_release: app.go_to('history')
+
+
+<HistoryScreen>:
+    name: 'history'
+    canvas.before:
+        Color:
+            rgba: app.bg_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 16
+        spacing: 10
+
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            GhostButton:
+                text: '< Voltar'
+                size_hint_x: None
+                width: '90dp'
+                on_release: app.go_to('main')
+            Label:
+                text: 'Historico de Downloads'
+                color: app.text_color
+                bold: True
+                font_size: '16sp'
+
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                id: history_list
+                orientation: 'vertical'
+                spacing: 4
+                size_hint_y: None
+                height: self.minimum_height
+
+        RoundedButton:
+            text: 'Limpar historico'
+            size_hint_y: None
+            height: '42dp'
+            background_color: app.error_color
+            on_release: app.clear_history()
+
+
+<SettingsScreen>:
+    name: 'settings'
+    canvas.before:
+        Color:
+            rgba: app.bg_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 16
+        spacing: 14
+
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            GhostButton:
+                text: '< Voltar'
+                size_hint_x: None
+                width: '90dp'
+                on_release: app.go_to('main')
+            Label:
+                text: 'Configuracoes'
+                color: app.text_color
+                bold: True
+                font_size: '16sp'
+
+        CardBox:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            SectionLabel:
+                text: 'Aparencia'
+            RoundedButton:
+                text: 'Alternar tema (atual: ' + app.theme_name + ')'
+                size_hint_y: None
+                height: '42dp'
+                background_color: app.accent2_color
+                on_release: app.toggle_theme()
+
+        CardBox:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            SectionLabel:
+                text: 'Sobre'
+            Label:
+                text:
+                    ('Os videos sao salvos na pasta privada do app.\\n'
+                    'Use "Compartilhar ultimo" na tela principal para\\n'
+                    'enviar o arquivo baixado para a Galeria, WhatsApp\\n'
+                    'ou qualquer outro app instalado.')
+                color: app.text_secondary_color
+                font_size: '12sp'
+                size_hint_y: None
+                height: self.texture_size[1] + 10
+                text_size: self.width, None
+                halign: 'left'
