@@ -3,9 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'UltraVideoDownloader_Mobile/**'
-      - '.github/workflows/build-apk.yml'
   workflow_dispatch: {}
 
 jobs:
@@ -36,17 +33,16 @@ jobs:
         with:
           path: |
             ~/.buildozer
-            UltraVideoDownloader_Mobile/.buildozer
-          key: buildozer-${{ hashFiles('UltraVideoDownloader_Mobile/buildozer.spec') }}
+            .buildozer
+          key: buildozer-${{ hashFiles('buildozer.spec') }}
           restore-keys: buildozer-
 
       - name: Compilar APK com Buildozer
-        working-directory: UltraVideoDownloader_Mobile
         run: yes | buildozer android debug
 
       - name: Disponibilizar o APK como artefato do build
         uses: actions/upload-artifact@v4
         with:
           name: UltraVideoDownloader-apk
-          path: UltraVideoDownloader_Mobile/bin/*.apk
+          path: bin/*.apk
           if-no-files-found: error
